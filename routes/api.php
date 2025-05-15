@@ -3,17 +3,18 @@
 use App\Http\Controllers\ApiAuthController;
 use App\Http\Controllers\ApiProductController;
 use App\Http\Middleware\APiAuth;
+use App\Http\Middleware\ForceJsonResponseApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-    
+
 
 
 Route::controller(ApiProductController::class)->group(function(){
-    Route::middleware(APiAuth::class)->group(function(){
+    Route::middleware('auth:sanctum')->group(function(){
 
         //read data
         Route::get('products' , 'all');
@@ -39,7 +40,7 @@ Route::controller(ApiAuthController::class)->group(function(){
     Route::post("login" , 'login');
 
     //logout
-    Route::post("logout" , "logout")->middleware(APiAuth::class);
+    Route::post("logout" , "logout")->middleware('auth:sanctum');
 
 
 });

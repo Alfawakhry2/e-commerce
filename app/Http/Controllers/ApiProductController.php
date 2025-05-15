@@ -15,24 +15,23 @@ class ApiProductController extends Controller
 {
     //read
     public function all(){
-        $products = Product::all();
+        $products = Product::paginate(10);
         if($products == null){
             return response()->json([
                 "msg"=>"No Data To Display"
             ] , 404);
         }
         //return in json format
-        return ProductResource::collection($products);
+        return ProductResource::collection($products); // instead of $products can use Product::all();
     }
 
     public function show($id){
         $product = Product::find($id);
-        if($product == null){
+        if(!$product){
             return response()->json([
                 "msg"=>"Product Not Found"
             ] , 404);
         }
-
         // used in specific id
         return new ProductResource($product);
     }
@@ -56,14 +55,14 @@ class ApiProductController extends Controller
             ] , 301);
         }
 
-        $request->image = Storage::putFile('Products' , $request->image);
+        $image = Storage::putFile('Products' , $request->image);
 
         Product::create([
             "name"=>$request->name ,
             "desc"=>$request->desc ,
             "price"=>$request->price ,
             "quantity"=>$request->quantity,
-            "image"=>$request->image,
+            "image"=>$image,
             "category_id"=>$request->category_id
         ]);
 
@@ -76,7 +75,15 @@ class ApiProductController extends Controller
     public function update(Request $request , $id){
 
 
+        //check product that typed
+        $product = Product::find($id);
+        if($product == null){
+            return response()->json([
+                "msg"=>"Product Not Found"
+            ],404);
+        }
 
+        //check validate
         $validator = Validator::make($request->all() , [
             'name' => "string|max:255",
             'desc' => "string",
@@ -91,13 +98,6 @@ class ApiProductController extends Controller
                 "errors"=>$validator->errors()
             ],301);
         }
-        //check product that typed
-        $product = Product::find($id);
-        if($product == null){
-            return response()->json([
-                "msg"=>"Product Not Found"
-            ],404);
-        }
 
         //take old data of all product
         $imageName = $product->image;
@@ -106,7 +106,7 @@ class ApiProductController extends Controller
         $name = $product->name ;
         $desc = $product->desc ;
         $price = $product->price ;
-        $quantity = $product->quantity ;    
+        $quantity = $product->quantity ;
         $category_id = $product->category_id ;
 
         if($request->has('image')){

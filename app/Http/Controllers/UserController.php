@@ -30,17 +30,6 @@ class UserController extends Controller
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     public function categoryproducts($id)
     {
         $category = Category::findOrfail($id);

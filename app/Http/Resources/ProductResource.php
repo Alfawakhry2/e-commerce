@@ -23,7 +23,6 @@ class ProductResource extends JsonResource
             'product_price'=>$this->price,
             'product_quantity'=>$this->quantity,
             'product_image'=>asset("storage")."/".$this->image,
-
         ];
     }
 }
