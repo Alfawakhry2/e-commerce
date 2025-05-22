@@ -11,6 +11,8 @@ use App\Models\OrderDetails;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+
 // use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
@@ -18,10 +20,11 @@ class UserController extends Controller
 
     //orders
 
-    public function showorder(){
+    public function showorder()
+    {
         $user = Auth::user();
         $orders = $user->orders()->with('orderdetails.product')->get();
-        return view('User.showorder' , compact('orders'));
+        return view('User.showorder', compact('orders'));
     }
 
 
@@ -52,10 +55,22 @@ class UserController extends Controller
 
     public function all()
     {
-        // $banners = Category::latest()->take(5)->get();
-        $categories = Category::all();
-        $products = Product::paginate(6);
-        return view('User.home', compact('products', 'categories')); // نوديهم على الفيو
+        // // $banners = Category::latest()->take(5)->get();
+        // $categories = Category::all();
+        // $products = Product::paginate(6);
+        // return view('User.home', compact('products', 'categories'));
+        // // return view('User.home', get_defined_vars());
+
+        $data = Cache::remember('home_products', 60, function () {
+            return [
+                'categories' => Category::all(),
+                'products' => Product::paginate(6),
+            ];
+        });
+
+        $categories = $data['categories'];
+        $products = $data['products'];
+        return view('User.home', compact('products', 'categories'));
     }
 
     public function show($id)
@@ -73,7 +88,7 @@ class UserController extends Controller
             ->paginate(6);
         if ($from == 'home') {
             return view('User.home', compact('products'));
-        }elseif($from == 'catpro'){
+        } elseif ($from == 'catpro') {
             return view('User.categoryproducts', compact('products'));
         }
     }
